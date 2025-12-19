@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Square Strategy: Warlord</title>
+    <title>Square Strategy: Protect the King</title>
     <style>
-        /* --- ORTALAMA DÜZELTMESİ İÇİN EKLENEN SATIR --- */
         * { box-sizing: border-box; }
 
         :root {
@@ -24,26 +23,39 @@
             color: var(--text);
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            width: 100vw; /* Tam genişlik */
+            width: 100vw;
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* --- ÜST PANEL --- */
+        #app-frame {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            max-height: 100vh;
+            position: relative;
+            background: #000;
+        }
+
         #header {
             background: var(--panel);
-            padding: 8px;
+            padding: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             font-size: 13px;
             z-index: 100;
-            width: 100%; /* Tam genişlik */
+            width: 100%;
         }
         .header-left, .header-right { display: flex; gap: 5px; align-items: center; }
         
@@ -63,26 +75,25 @@
         .quest-alert { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: red; border-radius: 50%; display: none; }
         .btn-skin { background: #16a085; }
 
-        /* --- OYUN ALANI (DÜZELTİLDİ) --- */
         #game-container {
             flex: 1;
-            width: 100%; /* Kapsayıcı tam genişlik */
-            position: relative;
+            width: 100%;
             display: flex;
             align-items: center;
-            justify-content: center; /* Tam ortalama */
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
 
         #map-grid {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             gap: 3px;
-            width: 95vw; /* Mobilde kenarlara yapışmasın */
-            max-width: 500px;
+            width: 96%;
             aspect-ratio: 1/1;
             position: relative;
             z-index: 10;
-            margin: auto; /* Ekstra güvenlik için margin auto */
+            margin: 0 auto;
         }
 
         .tile {
@@ -105,17 +116,27 @@
         .tile.neutral { background: #555; opacity: 0.7; }
 
         .tile.revealed { border: 2px solid var(--barb); }
+        
         .trap-indicator {
             position: absolute; bottom: 2px; right: 2px;
             width: 6px; height: 6px; background: cyan;
             border-radius: 50%; box-shadow: 0 0 4px white;
             display: none;
         }
+
+        /* Ana Üs İkonu */
+        .base-indicator {
+            position: absolute; top: -8px; right: -5px;
+            font-size: 16px; z-index: 20;
+            text-shadow: 0 0 4px black;
+            display: none;
+            filter: drop-shadow(0 0 2px gold);
+        }
+
         .tile span { pointer-events: none; z-index: 12; text-shadow: 1px 1px 3px black; }
 
         @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, -1px); } }
 
-        /* --- ALT PANEL --- */
         #footer {
             background: var(--panel); padding: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 101; width: 100%;
         }
@@ -134,13 +155,13 @@
         .btn-purp { background: #8e44ad; }
         .btn-red { background: #c0392b; } 
         .btn-trap { background: #34495e; border: 1px solid #3498db; }
+        .btn-base { background: #f39c12; color: #222; } /* Üs Taşıma Rengi */
         
         .cd-overlay {
             position: absolute; bottom: 0; left: 0; height: 4px; width: 0%;
             background: rgba(255,255,255,0.7); transition: width 0.1s linear;
         }
 
-        /* --- MODALLAR --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 2000;
@@ -151,20 +172,14 @@
             width: 90%; max-width: 350px; text-align: center; border: 1px solid #444;
             max-height: 85vh; overflow-y: auto;
         }
-        
         .list-item {
             background: #333; padding: 10px; margin: 5px 0; border-radius: 5px;
             display: flex; justify-content: space-between; align-items: center; text-align: left;
         }
-        .prog-bar {
-            width: 100%; height: 6px; background: #555; border-radius: 3px; margin-top: 5px; overflow: hidden;
-        }
+        .prog-bar { width: 100%; height: 6px; background: #555; border-radius: 3px; margin-top: 5px; overflow: hidden; }
         .prog-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s; }
 
-        .tactic-card {
-            border: 2px solid #444; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; text-align: left;
-            transition: 0.2s;
-        }
+        .tactic-card { border: 2px solid #444; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s; }
         .tactic-card.active { border-color: var(--gold); background: rgba(241, 196, 15, 0.1); }
         .tactic-title { font-weight: bold; margin-bottom: 2px; }
         .tactic-desc { font-size: 11px; color: #aaa; }
@@ -189,53 +204,56 @@
 </head>
 <body>
 
-    <div id="header">
-        <div class="header-left">
-            <button class="icon-btn" onclick="openSettings()">⚙️</button>
-            <button class="icon-btn btn-help" onclick="openModal('help-modal')">?</button>
-            <button class="icon-btn btn-skin" onclick="openModal('skin-modal')">🎨</button>
-            <button class="icon-btn btn-quest" onclick="openMissions()">
-                📜<div class="quest-alert" id="quest-alert"></div>
-            </button>
+    <div id="app-frame">
+        <div id="header">
+            <div class="header-left">
+                <button class="icon-btn" onclick="openSettings()">⚙️</button>
+                <button class="icon-btn btn-help" onclick="openModal('help-modal')">?</button>
+                <button class="icon-btn btn-skin" onclick="openModal('skin-modal')">🎨</button>
+                <button class="icon-btn btn-quest" onclick="openMissions()">
+                    📜<div class="quest-alert" id="quest-alert"></div>
+                </button>
+            </div>
+            <div class="header-right">
+                <span class="badge tactic-badge" id="ui-tactic-badge">NORMAL</span>
+                <span class="badge">💰 <span id="ui-gold" class="gold-txt">0</span></span>
+                <button class="icon-btn" onclick="togglePause()">⏸</button>
+            </div>
         </div>
-        <div class="header-right">
-            <span class="badge tactic-badge" id="ui-tactic-badge">NORMAL</span>
-            <span class="badge">💰 <span id="ui-gold" class="gold-txt">0</span></span>
-            <button class="icon-btn" onclick="togglePause()">⏸</button>
-        </div>
-    </div>
 
-    <div id="game-container">
-        <div id="map-grid"></div>
-        <div id="pause-overlay">
-            <h3>OYUN DURAKLATILDI</h3>
-            <button class="action-btn btn-green" style="width:120px; flex:none;" onclick="togglePause()">DEVAM ET</button>
+        <div id="game-container">
+            <div id="map-grid"></div>
+            <div id="pause-overlay">
+                <h3>OYUN DURAKLATILDI</h3>
+                <button class="action-btn btn-green" style="width:120px; flex:none;" onclick="togglePause()">DEVAM ET</button>
+            </div>
+            <svg id="arrow-layer">
+                <line id="drag-line" x1="0" y1="0" x2="0" y2="0" stroke="#f1c40f" stroke-width="12" stroke-linecap="round" style="display:none; opacity: 0.9;" />
+                <polygon id="drag-head" points="0,0" fill="#f1c40f" style="display:none;" />
+            </svg>
         </div>
-        <svg id="arrow-layer">
-            <line id="drag-line" x1="0" y1="0" x2="0" y2="0" stroke="#f1c40f" stroke-width="12" stroke-linecap="round" style="display:none; opacity: 0.9;" />
-            <polygon id="drag-head" points="0,0" fill="#f1c40f" style="display:none;" />
-        </svg>
-    </div>
 
-    <div id="footer">
-        <div class="btn-row">
-            <button class="action-btn btn-red" onclick="openModal('tactic-modal')">⚔️ TAKTİK</button>
-            <button class="action-btn btn-trap" onclick="setTrap()">🪤 PUSU (15g)</button>
-            <button class="action-btn btn-orange" onclick="openModal('shop-modal')">🛒 MAĞAZA</button>
-        </div>
-        <div class="btn-row">
-            <button id="btn-recruit" class="action-btn btn-green" onclick="recruitAction()">+ ASKER (<span id="ui-recruit-cost">5</span>g)</button>
-            <button id="btn-tax" class="action-btn btn-purp" onclick="collectTax()">
-                <span>VERGİ: +<span id="ui-income">0</span>g</span>
-                <span style="font-size:10px; color:#ddd;">Halk Desteği: %<span id="ui-efficiency">100</span></span>
-                <div class="cd-overlay" id="tax-cd"></div>
-            </button>
+        <div id="footer">
+            <div class="btn-row">
+                <button class="action-btn btn-red" onclick="openModal('tactic-modal')">⚔️ TAKTİK</button>
+                <button class="action-btn btn-trap" onclick="setTrap()">🪤 PUSU (15g)</button>
+                <button class="action-btn btn-orange" onclick="openModal('shop-modal')">🛒 MAĞAZA</button>
+            </div>
+            <div class="btn-row">
+                <button id="btn-recruit" class="action-btn btn-green" onclick="recruitAction()">+ ASKER (<span id="ui-recruit-cost">5</span>g)</button>
+                <button class="action-btn btn-base" onclick="moveBase()">🏰 ÜS TAŞI (50g)</button>
+                <button id="btn-tax" class="action-btn btn-purp" onclick="collectTax()">
+                    <span>VERGİ: +<span id="ui-income">0</span>g</span>
+                    <span style="font-size:9px; color:#ddd;">Halk: %<span id="ui-efficiency">100</span></span>
+                    <div class="cd-overlay" id="tax-cd"></div>
+                </button>
+            </div>
         </div>
     </div>
 
     <div id="missions-modal" class="modal"><div class="modal-content"><h3 style="color:#8e44ad;">GÜNLÜK GÖREVLER</h3><p style="font-size:11px; color:#aaa;" id="mission-timer">Yenilenme: Yarın</p><div id="mission-list"></div><br><button class="action-btn btn-green" onclick="closeModal('missions-modal')">KAPAT</button></div></div>
     <div id="tactic-modal" class="modal"><div class="modal-content"><h3 style="color:#c0392b;">SAVAŞ DOKTRİNİ</h3><div class="tactic-card" id="tac-normal" onclick="setTactic('normal')"><div class="tactic-title">⚪ NORMAL</div><div class="tactic-desc">Dengeli. Bonus veya ceza yok.</div></div><div class="tactic-card" id="tac-attack" onclick="setTactic('attack')"><div class="tactic-title">🔴 TAARRUZ (Hücum)</div><div class="tactic-desc">Saldırı Gücü: <strong>+%50</strong><br>Savunma Zafiyeti: <strong>Alınan hasar artar.</strong></div></div><div class="tactic-card" id="tac-defense" onclick="setTactic('defense')"><div class="tactic-title">🔵 TAHKİMAT (Savunma)</div><div class="tactic-desc">Savunma Gücü: <strong>+%50</strong><br>Saldırı Cezası: <strong>-%30 Hasar.</strong></div></div><div class="tactic-card" id="tac-speed" onclick="setTactic('speed')"><div class="tactic-title">🟢 LOJİSTİK (Ekonomi)</div><div class="tactic-desc">Asker Maliyeti: <strong>4g</strong> (Ucuz)<br>Savaş Gücü: <strong>-%20 Hasar.</strong></div></div><br><button class="action-btn btn-green" onclick="closeModal('tactic-modal')">ONAYLA</button></div></div>
-    <div id="help-modal" class="modal"><div class="modal-content"><h3 style="color:#3498db;">YENİ MEKANİKLER</h3><div style="text-align:left;font-size:13px;"><p>📊 <strong>Dinamik Halk:</strong> Büyük orduları yenersen halk coşar (%40 destek). Kaybedersen düşer. Sürekli vergi toplarsan düşer.</p><p>⚔️ <strong>Taktikler:</strong> Alt menüden stratejini seç. Saldırı, Savunma veya Ucuz Asker.</p><p>📅 <strong>Günlük Görev:</strong> Her gün 6 yeni görev gelir.</p></div><button class="action-btn btn-green" onclick="closeModal('help-modal')">ANLADIM</button></div></div>
+    <div id="help-modal" class="modal"><div class="modal-content"><h3 style="color:#3498db;">YENİ KURALLAR</h3><div style="text-align:left;font-size:13px;"><p>🏰 <strong>ANA ÜS KORUMASI:</strong> Kalen (🏰) düşerse oyunu <strong>KAYBEDERSİN!</strong></p><p>🚚 <strong>Üs Taşıma:</strong> Kaleni güvenli bir yere taşımak için 50 altın öde.</p><p>📊 <strong>Ekonomi:</strong> Vergi topladıkça halk yorulur, fetih yaptıkça sevinir.</p></div><button class="action-btn btn-green" onclick="closeModal('help-modal')">ANLADIM</button></div></div>
     <div id="skin-modal" class="modal"><div class="modal-content"><h3>ÖZELLEŞTİRME</h3><p>Sen:</p><div><span class="color-opt" style="background:#3498db" onclick="setSkin('player', '#3498db')"></span><span class="color-opt" style="background:#1abc9c" onclick="setSkin('player', '#1abc9c')"></span><span class="color-opt" style="background:#9b59b6" onclick="setSkin('player', '#9b59b6')"></span></div><p>Düşman:</p><div><span class="color-opt" style="background:#c0392b" onclick="setSkin('enemy', '#c0392b')"></span><span class="color-opt" style="background:#e67e22" onclick="setSkin('enemy', '#e67e22')"></span></div><p>Barbar:</p><div><span class="color-opt" style="background:#d35400" onclick="setSkin('barb', '#d35400')"></span><span class="color-opt" style="background:#8e44ad" onclick="setSkin('barb', '#8e44ad')"></span></div><br><button class="action-btn btn-green" onclick="closeModal('skin-modal')">KAYDET</button></div></div>
     <div id="shop-modal" class="modal"><div class="modal-content"><h3 style="color:#e67e22;">MAĞAZA</h3><div class="list-item" onclick="buyItem('income')"><div>📈 <strong>Yatırım</strong><br><small>Gelir +3</small></div><div style="color:var(--gold)">50g</div></div><div class="list-item" onclick="buyItem('merc')"><div>⚔️ <strong>Paralı Asker</strong><br><small>+15 Asker</small></div><div style="color:var(--gold)">40g</div></div><div class="list-item" onclick="buyItem('fort')"><div>🏰 <strong>Kale</strong><br><small>Merkez +25 Asker</small></div><div style="color:var(--gold)">60g</div></div><div class="list-item" onclick="buyItem('spy')"><div>👁️ <strong>Casus</strong><br><small>Pusuları Gör</small></div><div style="color:var(--gold)">75g</div></div><div class="list-item" onclick="buyItem('nuke')"><div>💣 <strong>Hava Saldırısı</strong><br><small>Düşmanı Vur</small></div><div style="color:var(--gold)">120g</div></div><br><button class="action-btn btn-blue" onclick="closeModal('shop-modal')">ÇIKIŞ</button></div></div>
     <div id="settings-modal" class="modal"><div class="modal-content"><h3>AYARLAR</h3><div style="background:#333; padding:10px; border-radius:5px; margin-bottom:10px;"><input type="text" id="cheat-code" style="width:70%; padding:8px; text-transform:uppercase;" placeholder="KOD"><button class="action-btn btn-purp" style="padding:8px; width:auto;" onclick="submitCode()">OK</button></div><button class="action-btn" style="background:#c0392b;" onclick="fullReset()">⚠️ SIFIRLA</button><br><br><button class="action-btn btn-green" onclick="closeModal('settings-modal')">KAPAT</button></div></div>
@@ -254,13 +272,12 @@
     let selectedIdx = null;
     let taxReady = true;
     let taxEfficiency = 100;
-    
-    // STRATEJİ
     let currentTactic = 'normal'; 
-
-    // GÖREVLER
     let dailyMissions = [];
     let lastMissionDate = "";
+    
+    // YENİ: Ana Üs Değişkeni
+    let baseIdx = 0;
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = new AudioContext();
@@ -285,7 +302,7 @@
         document.getElementById('pause-overlay').style.display = 'none';
         
         if(!nextLevel) {
-            const d = JSON.parse(localStorage.getItem('aos_pro_save')) || {};
+            const d = JSON.parse(localStorage.getItem('aos_def_save')) || {};
             level = d.level || 1; gold = d.gold || 0; incomeBonus = d.income || 0;
             if(d.date) lastMissionDate = d.date;
             if(d.missions) dailyMissions = d.missions;
@@ -298,6 +315,7 @@
         
         checkDailyMissions();
         taxEfficiency = 100;
+        baseIdx = 0; // Her zaman sol üstte başla
 
         for (let i = 0; i < TOTAL; i++) {
             let owner = 0;
@@ -305,14 +323,15 @@
             let economy = Math.floor(Math.random() * 3) + 1;
             let hiddenBarb = 0;
 
-            if (i === 0) { owner = 1; army = 15; } 
+            if (i === 0) { owner = 1; army = 15; baseIdx = 0; } 
             else if (i === TOTAL - 1) { owner = 2; army = 20 + (level * 8); } 
             else { if(Math.random() < 0.15) hiddenBarb = 10 + (level * 2); }
 
             const div = document.createElement('div');
             div.className = 'tile neutral';
             div.dataset.idx = i;
-            div.innerHTML = `<span>${army}</span><div class="trap-indicator"></div>`;
+            // base-indicator burada
+            div.innerHTML = `<span>${army}</span><div class="trap-indicator"></div><div class="base-indicator">🏰</div>`;
             div.addEventListener('mousedown', startDrag);
             div.addEventListener('touchstart', startDrag, {passive: false});
 
@@ -334,7 +353,26 @@
     function startGameLoops() {
         for(let k in loops) clearInterval(loops[k]);
         loops.ai = setInterval(() => { if(!isPaused) aiLoop(); }, Math.max(500, 2000 - (level * 100)));
-        loops.spawn = setInterval(() => { if(!isPaused && tiles[0].owner===1) { tiles[0].army+=2; animPop(0); updateUI(); } }, 4000);
+        // OTO-SPAWN her zaman ANA ÜSSE (baseIdx)
+        loops.spawn = setInterval(() => { 
+            if(!isPaused && tiles[baseIdx].owner===1) { 
+                tiles[baseIdx].army+=2; animPop(baseIdx); updateUI(); 
+            } 
+        }, 4000);
+    }
+
+    // --- YENİ FONKSİYON: ÜS TAŞIMA ---
+    function moveBase() {
+        if(isPaused) return;
+        if(selectedIdx === null || tiles[selectedIdx].owner !== 1) return alert("Kendi bölgende bir kare seç!");
+        if(selectedIdx === baseIdx) return alert("Zaten Ana Üs burası!");
+        if(gold < 50) return alert("Yetersiz Altın (50g)");
+
+        gold -= 50;
+        baseIdx = selectedIdx; // Yeni üs
+        playSound('good');
+        showFloatText("ÜS TAŞINDI!", tiles[baseIdx].el, 'green');
+        updateUI();
     }
 
     function setTactic(type) {
@@ -393,6 +431,47 @@
                 }
             }
         }
+        updateUI();
+    }
+
+    function aiLoop() {
+        if(isPaused) return;
+        const units = tiles.filter(t => t.owner === 2);
+        units.forEach(t => {
+            if(Math.random() > 0.3 && t.army > 2) {
+                const adj = [t.id-1, t.id+1, t.id-GRID_W, t.id+GRID_W].filter(n => n>=0 && n<TOTAL);
+                const targetId = adj.find(n => tiles[n] && (Math.abs((t.id%GRID_W)-(n%GRID_W))+Math.abs(Math.floor(t.id/GRID_W)-Math.floor(n/GRID_W))===1));
+                if(targetId !== undefined) {
+                    const target = tiles[targetId];
+                    if(target.owner !== 2) {
+                        const force = Math.floor(t.army/2); t.army -= force;
+                        
+                        // YENİ: DÜŞMAN PUSUYU YENERSE VEYA ÜSSÜ ALIRSA
+                        let win = false;
+                        if(target.owner === 0 && target.trap > 0) {
+                            if(target.trap > force) { target.owner = 1; target.army = target.trap - force; target.trap = 0; showFloatText("Pusu Tuttu!", target.el); } 
+                            else { target.owner = 2; target.army = force - target.trap; target.trap = 0; win=true; }
+                        } else {
+                            let effectiveForce = force;
+                            if(target.owner === 1 && currentTactic === 'defense') effectiveForce = Math.floor(force * 0.7);
+                            if(effectiveForce > target.army) { target.army = effectiveForce - target.army; target.owner = 2; win=true; } else { target.army -= effectiveForce; }
+                        }
+
+                        // KAYBETME KONTROLÜ
+                        if(win) {
+                            checkWin(); 
+                            // Eğer alınan yer ANA ÜS ise
+                            if(target.id === baseIdx) {
+                                setTimeout(() => {
+                                    alert("KRALLIK DÜŞTÜ! Ana Üs kaybedildi.");
+                                    init(false);
+                                }, 100);
+                            }
+                        }
+                    }
+                }
+            } else { t.army += 1 + Math.floor(level/5); }
+        });
         updateUI();
     }
 
@@ -455,39 +534,16 @@
         document.getElementById('mission-list').innerHTML = html; openModal('missions-modal');
     }
 
-    function aiLoop() {
-        if(isPaused) return;
-        const units = tiles.filter(t => t.owner === 2);
-        units.forEach(t => {
-            if(Math.random() > 0.3 && t.army > 2) {
-                const adj = [t.id-1, t.id+1, t.id-GRID_W, t.id+GRID_W].filter(n => n>=0 && n<TOTAL);
-                const targetId = adj.find(n => tiles[n] && (Math.abs((t.id%GRID_W)-(n%GRID_W))+Math.abs(Math.floor(t.id/GRID_W)-Math.floor(n/GRID_W))===1));
-                if(targetId !== undefined) {
-                    const target = tiles[targetId];
-                    if(target.owner !== 2) {
-                        const force = Math.floor(t.army/2); t.army -= force;
-                        if(target.owner === 0 && target.trap > 0) {
-                            if(target.trap > force) { target.owner = 1; target.army = target.trap - force; target.trap = 0; showFloatText("Pusu Tuttu!", target.el); } 
-                            else { target.owner = 2; target.army = force - target.trap; target.trap = 0; }
-                        } else {
-                            let effectiveForce = force;
-                            if(target.owner === 1 && currentTactic === 'defense') effectiveForce = Math.floor(force * 0.7);
-                            if(effectiveForce > target.army) { target.army = effectiveForce - target.army; target.owner = 2; checkWin(); } else { target.army -= effectiveForce; }
-                        }
-                    }
-                }
-            } else { t.army += 1 + Math.floor(level/5); }
-        });
-        updateUI();
-    }
-
     function recruitAction() {
         if(isPaused) return;
-        if(selectedIdx===null || tiles[selectedIdx].owner!==1) return;
+        // Askerler artık ANA ÜSSE (baseIdx) iner
+        let targetIdx = baseIdx;
+        if(tiles[targetIdx].owner !== 1) return alert("Ana Üssünü Kaybettin!"); 
+
         let cost = 5; if(currentTactic === 'speed') cost = 4;
         if(gold < cost) return;
         gold -= cost; missionUpdate('spend', cost); missionUpdate('recruit', 5);
-        tiles[selectedIdx].army += 5; animPop(selectedIdx); updateUI();
+        tiles[targetIdx].army += 5; animPop(targetIdx); updateUI();
     }
     
     function setTrap() {
@@ -502,7 +558,7 @@
         if(type==='income' && gold>=50) { gold-=50; incomeBonus+=3; missionUpdate('spend', 50); }
         else if(type==='merc' && gold>=40) { if(selectedIdx!==null && tiles[selectedIdx].owner===1){gold-=40; tiles[selectedIdx].army+=15; missionUpdate('spend', 40);} }
         else if(type==='nuke' && gold>=120) { gold-=120; tiles.forEach(t=>{if(t.owner===2)t.army=1}); playSound('fight'); missionUpdate('spend', 120); }
-        else if(type==='fort' && gold>=60) { if(tiles[0].owner===1) { gold-=60; tiles[0].army+=25; missionUpdate('spend', 60); } }
+        else if(type==='fort' && gold>=60) { if(tiles[baseIdx].owner===1) { gold-=60; tiles[baseIdx].army+=25; missionUpdate('spend', 60); } }
         else if(type==='spy' && gold>=75) { gold-=75; tiles.forEach(t => { if(t.hiddenBarb > 0) { t.el.classList.add('revealed'); setTimeout(()=>t.el.classList.remove('revealed'), 3000); } }); showFloatText("👁️ Pusular Göründü", document.body); missionUpdate('spend', 75); }
         closeModal('shop-modal'); updateUI();
     }
@@ -523,6 +579,11 @@
             const el = t.el; el.className = 'tile';
             if(t.owner===1) el.classList.add('player'); else if(t.owner===2) el.classList.add('enemy'); else if(t.owner===3) el.classList.add('barbarian'); else el.classList.add('neutral');
             const trap = el.querySelector('.trap-indicator'); trap.style.display = (t.trap > 0 && t.owner===0) ? 'block' : 'none';
+            
+            // Base İkonunu Sadece Ana Üs'te Göster
+            const baseInd = el.querySelector('.base-indicator');
+            baseInd.style.display = (t.id === baseIdx && t.owner === 1) ? 'block' : 'none';
+
             if(selectedIdx===t.id) el.style.border="2px solid white"; else el.style.border="";
             el.querySelector('span').innerText = t.army;
         });
@@ -531,7 +592,7 @@
     
     function saveData() {
         const colors = { player: getComputedStyle(document.documentElement).getPropertyValue('--player').trim(), enemy: getComputedStyle(document.documentElement).getPropertyValue('--enemy').trim(), barb: getComputedStyle(document.documentElement).getPropertyValue('--barb').trim() };
-        localStorage.setItem('aos_pro_save', JSON.stringify({level, gold, income:incomeBonus, missions: dailyMissions, date: lastMissionDate, colors}));
+        localStorage.setItem('aos_def_save', JSON.stringify({level, gold, income:incomeBonus, missions: dailyMissions, date: lastMissionDate, colors}));
     }
 
     function checkWin() { if(tiles.filter(t=>t.owner===1).length===0) { alert("YENİLDİN"); init(false); } else if(tiles.filter(t=>t.owner===2).length===0) { alert("ZAFER!"); level++; init(true); } }
@@ -541,12 +602,24 @@
     function openModal(id){ document.getElementById(id).style.display='flex'; isPaused=true; }
     function closeModal(id){ document.getElementById(id).style.display='none'; isPaused=false; }
     function openSettings(){ openModal('settings-modal'); }
-    function fullReset(){ localStorage.removeItem('aos_pro_save'); location.reload(); }
+    function fullReset(){ localStorage.removeItem('aos_def_save'); location.reload(); }
     function submitCode(){ const val = document.getElementById('cheat-code').value.trim().toUpperCase(); if(val==='PARA'){ gold+=500; updateUI(); closeModal('settings-modal'); } else if(val==='LEVEL'){ level++; init(true); closeModal('settings-modal'); } else {alert("Kod Hatalı");} }
     function showFloatText(txt,t,c){ if(!t)return; const r=t.getBoundingClientRect?t.getBoundingClientRect():{top:100,left:100}; const e=document.createElement('div'); e.className='float-text '+(c||''); e.innerText=txt; e.style.left=r.left+'px'; e.style.top=r.top+'px'; document.body.appendChild(e); setTimeout(()=>e.remove(),1000); }
     function animPop(i){ tiles[i].el.classList.remove('anim-pop'); void tiles[i].el.offsetWidth; tiles[i].el.classList.add('anim-pop'); }
 
-    function startDrag(e){if(isPaused)return; if(e.target.closest('.tile')){e.preventDefault();const i=parseInt(e.target.closest('.tile').dataset.idx); if(tiles[i].owner===1||tiles[i].owner===0){selectedIdx=i;updateUI();} if(tiles[i].owner===1){isDragging=true;dragStartIdx=i;}}}
+    // SÜRÜKLEME VE TIKLAMA
+    function startDrag(e){
+        if(isPaused)return; 
+        if(e.target.closest('.tile')){
+            e.preventDefault();
+            const i=parseInt(e.target.closest('.tile').dataset.idx);
+            
+            // Sadece seçim (Base değişmez artık, butonla değişir)
+            if(tiles[i].owner===1||tiles[i].owner===0){ selectedIdx=i; updateUI(); }
+            if(tiles[i].owner===1){ isDragging=true; dragStartIdx=i; }
+        }
+    }
+    
     function doDrag(e){if(!isDragging||isPaused)return;e.preventDefault();const t=e.touches?e.touches[0]:e;const b=tiles[dragStartIdx].el.getBoundingClientRect();drawArrow(b.left+b.width/2,b.top+b.height/2,t.clientX,t.clientY);}
     function endDrag(e){if(!isDragging)return;isDragging=false;document.getElementById('drag-line').style.display='none';document.getElementById('drag-head').style.display='none';const t=e.changedTouches?e.changedTouches[0]:e;const el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.closest('.tile')){const i=parseInt(el.closest('.tile').dataset.idx);if(i!==dragStartIdx)attemptMove(dragStartIdx,i);}}
     function drawArrow(x1,y1,x2,y2){const l=document.getElementById('drag-line'),h=document.getElementById('drag-head');l.style.display='block';l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);const a=Math.atan2(y2-y1,x2-x1);h.style.display='block';h.setAttribute('points',`${x2},${y2} ${x2-20*Math.cos(a-0.5)},${y2-20*Math.sin(a-0.5)} ${x2-20*Math.cos(a+0.5)},${y2-20*Math.sin(a+0.5)}`);}
