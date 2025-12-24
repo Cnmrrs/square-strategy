@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Square Strategy: NPM Connected</title>
+    <title>Square Strategy: NPM Accounts</title>
     <style>
         * { box-sizing: border-box; }
 
@@ -16,7 +16,7 @@
             --gold: #f1c40f;
             --text: #ecf0f1;
             --green: #2ecc71;
-            --npm: #cb3837; /* NPM Kırmızısı */
+            --npm: #cb3837;
         }
 
         body {
@@ -71,9 +71,12 @@
             transition: 0.1s;
         }
         .icon-btn:active { transform: scale(0.95); }
-        
-        .btn-user { background: var(--npm); box-shadow: 0 0 5px var(--npm); }
+        .btn-user { background: var(--npm); box-shadow: 0 0 5px var(--npm); position: relative; }
         .user-status { width: 8px; height: 8px; background: #2ecc71; border-radius: 50%; position: absolute; bottom: 2px; right: 2px; border: 1px solid #fff; display: none; }
+        .btn-help { background: #2980b9; }
+        .btn-quest { background: #8e44ad; position: relative; }
+        .quest-alert { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: red; border-radius: 50%; display: none; }
+        .btn-skin { background: #16a085; }
 
         #game-container {
             flex: 1;
@@ -114,39 +117,17 @@
         .tile.enemy { background: var(--enemy); border-bottom: 3px solid rgba(0,0,0,0.3); }
         .tile.barbarian { background: var(--barb); border-bottom: 3px solid rgba(0,0,0,0.3); animation: shake 0.5s; }
         .tile.neutral { background: #555; opacity: 0.7; }
-
         .tile.revealed { border: 2px solid var(--barb); }
         
-        .trap-indicator {
-            position: absolute; bottom: 2px; right: 2px;
-            width: 6px; height: 6px; background: cyan;
-            border-radius: 50%; box-shadow: 0 0 4px white;
-            display: none;
-        }
-
-        /* Ana Üs İkonu */
-        .base-indicator {
-            position: absolute; top: -8px; right: -5px;
-            font-size: 16px; z-index: 20;
-            text-shadow: 0 0 4px black;
-            display: none;
-            filter: drop-shadow(0 0 2px gold);
-        }
-
+        .trap-indicator { position: absolute; bottom: 2px; right: 2px; width: 6px; height: 6px; background: cyan; border-radius: 50%; box-shadow: 0 0 4px white; display: none; }
+        .base-indicator { position: absolute; top: -8px; right: -5px; font-size: 16px; z-index: 20; text-shadow: 0 0 4px black; display: none; filter: drop-shadow(0 0 2px gold); }
         .tile span { pointer-events: none; z-index: 12; text-shadow: 1px 1px 3px black; }
 
         @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, -1px); } }
 
-        #footer {
-            background: var(--panel); padding: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 101; width: 100%;
-        }
+        #footer { background: var(--panel); padding: 10px; display: flex; flex-direction: column; gap: 5px; z-index: 101; width: 100%; }
         .btn-row { display: flex; gap: 5px; }
-        button.action-btn {
-            flex: 1; padding: 10px; border: none; border-radius: 6px;
-            font-weight: bold; color: white; cursor: pointer;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.3); font-size:12px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
+        button.action-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; color: white; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.3); font-size:12px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         button.action-btn:active { transform: translateY(2px); box-shadow: none; }
         button.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -157,26 +138,12 @@
         .btn-trap { background: #34495e; border: 1px solid #3498db; }
         .btn-base { background: #f39c12; color: #222; } 
         
-        .cd-overlay {
-            position: absolute; bottom: 0; left: 0; height: 4px; width: 0%;
-            background: rgba(255,255,255,0.7); transition: width 0.1s linear;
-        }
+        .cd-overlay { position: absolute; bottom: 0; left: 0; height: 4px; width: 0%; background: rgba(255,255,255,0.7); transition: width 0.1s linear; }
 
-        /* --- MODALLAR --- */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 2000;
-            justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: #222; padding: 20px; border-radius: 12px;
-            width: 90%; max-width: 350px; text-align: center; border: 1px solid #444;
-            max-height: 85vh; overflow-y: auto;
-        }
-        .list-item {
-            background: #333; padding: 10px; margin: 5px 0; border-radius: 5px;
-            display: flex; justify-content: space-between; align-items: center; text-align: left;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #222; padding: 20px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #444; max-height: 85vh; overflow-y: auto; }
+        
+        .list-item { background: #333; padding: 10px; margin: 5px 0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .prog-bar { width: 100%; height: 6px; background: #555; border-radius: 3px; margin-top: 5px; overflow: hidden; }
         .prog-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s; }
 
@@ -187,13 +154,12 @@
 
         .color-opt { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; margin: 5px;}
 
-        /* ACHIEVEMENT NOTIFICATION */
-        #achieve-notify {
-            position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.9); border: 2px solid var(--gold);
-            padding: 15px; border-radius: 8px; display: none; z-index: 3000;
-            text-align: center; animation: slideDown 0.5s; width: 80%; max-width: 300px;
-        }
+        /* Login Inputs */
+        .auth-input { width: 100%; padding: 10px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #555; background: #333; color: white; }
+        .auth-link { color: var(--gold); cursor: pointer; text-decoration: underline; font-size: 12px; }
+        .error-msg { color: #e74c3c; font-size: 12px; margin-bottom: 10px; display: none; }
+
+        #achieve-notify { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 2px solid var(--gold); padding: 15px; border-radius: 8px; display: none; z-index: 3000; text-align: center; animation: slideDown 0.5s; width: 80%; max-width: 300px; }
         #achieve-notify h4 { margin: 0 0 5px 0; color: var(--gold); }
         #achieve-notify p { margin: 0; font-size: 12px; color: #fff; }
 
@@ -201,17 +167,13 @@
         @keyframes pop { 50% { transform: scale(1.4); filter: brightness(1.5); } }
         .anim-pop { animation: pop 0.2s ease-out; z-index: 15 !important; }
 
-        .float-text {
-            position: absolute; color: var(--gold); font-weight: bold; font-size: 18px;
-            pointer-events: none; animation: floatUp 1s ease-out forwards; z-index: 20;
-            text-shadow: 0 0 3px black;
-        }
+        .float-text { position: absolute; color: var(--gold); font-weight: bold; font-size: 18px; pointer-events: none; animation: floatUp 1s ease-out forwards; z-index: 20; text-shadow: 0 0 3px black; }
         .float-text.bad { color: var(--barb); font-size: 22px; z-index: 25; }
         .float-text.green { color: var(--green); font-size: 20px; z-index: 25; }
         @keyframes floatUp { 0% { transform: translateY(0); opacity:1; } 100% { transform: translateY(-50px); opacity:0; } }
 
         #pause-overlay { display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1500; flex-direction:column; justify-content:center; align-items:center; color:white; backdrop-filter: blur(3px); }
-
+        
         .achieve-row { opacity: 0.5; padding: 10px; border-bottom: 1px solid #444; text-align: left; }
         .achieve-row.unlocked { opacity: 1; border-left: 4px solid var(--gold); background: rgba(241, 196, 15, 0.1); }
         .achieve-title { font-weight: bold; color: var(--gold); }
@@ -222,7 +184,7 @@
 
     <div id="achieve-notify">
         <h4>🏆 BAŞARIM AÇILDI!</h4>
-        <p id="achieve-text">İlk Kan</p>
+        <p id="achieve-text">Mesaj</p>
     </div>
 
     <div id="app-frame">
@@ -274,24 +236,37 @@
         <div class="modal-content">
             <h3 style="color:var(--npm);">NPM LAUNCHER HESABI</h3>
             
-            <div id="login-section">
-                <p>NPM hesabınla bağlan ve ödülleri kap!</p>
-                <input type="text" id="npm-username" placeholder="Kullanıcı Adı" style="padding:10px; width:80%; border-radius:5px; border:none; margin-bottom:10px;">
-                <button class="action-btn btn-green" onclick="npmLogin()">GİRİŞ YAP</button>
+            <div id="auth-login">
+                <p>Mevcut hesabınla giriş yap</p>
+                <div id="login-error" class="error-msg"></div>
+                <input type="text" id="login-user" class="auth-input" placeholder="Kullanıcı Adı">
+                <input type="password" id="login-pass" class="auth-input" placeholder="Şifre">
+                <button class="action-btn btn-green" onclick="authLogin()">GİRİŞ YAP</button>
+                <br>
+                <span class="auth-link" onclick="switchAuth('register')">Hesabın yok mu? Kayıt Ol</span>
             </div>
 
-            <div id="profile-section" style="display:none;">
-                <h4 id="user-display">Kullanıcı</h4>
+            <div id="auth-register" style="display:none;">
+                <p>Yeni hesap oluştur (+500 Altın Bonus)</p>
+                <div id="reg-error" class="error-msg"></div>
+                <input type="text" id="reg-user" class="auth-input" placeholder="Yeni Kullanıcı Adı">
+                <input type="password" id="reg-pass" class="auth-input" placeholder="Şifre">
+                <button class="action-btn btn-orange" onclick="authRegister()">KAYIT OL</button>
+                <br>
+                <span class="auth-link" onclick="switchAuth('login')">Zaten hesabın var mı? Giriş Yap</span>
+            </div>
+
+            <div id="auth-profile" style="display:none;">
+                <h4 id="user-display" style="color:#fff;">Kullanıcı</h4>
                 <div style="background:#333; padding:10px; border-radius:5px; margin-bottom:10px;">
                     <div style="font-size:12px; color:#aaa;">NPM PUANI</div>
                     <div style="font-size:24px; font-weight:bold; color:var(--green);" id="user-score">0</div>
                 </div>
                 <hr style="border-color:#444;">
                 <h4 style="margin:10px 0;">BAŞARIMLAR</h4>
-                <div id="achieve-list" style="max-height:150px; overflow-y:auto;">
-                    </div>
+                <div id="achieve-list" style="max-height:150px; overflow-y:auto;"></div>
                 <br>
-                <button class="action-btn btn-red" onclick="npmLogout()">ÇIKIŞ YAP</button>
+                <button class="action-btn btn-red" onclick="authLogout()">ÇIKIŞ YAP</button>
             </div>
             <br>
             <button class="action-btn" onclick="closeModal('profile-modal')">KAPAT</button>
@@ -300,7 +275,7 @@
 
     <div id="missions-modal" class="modal"><div class="modal-content"><h3 style="color:#8e44ad;">GÜNLÜK GÖREVLER</h3><p style="font-size:11px; color:#aaa;" id="mission-timer">Yenilenme: Yarın</p><div id="mission-list"></div><br><button class="action-btn btn-green" onclick="closeModal('missions-modal')">KAPAT</button></div></div>
     <div id="tactic-modal" class="modal"><div class="modal-content"><h3 style="color:#c0392b;">SAVAŞ DOKTRİNİ</h3><div class="tactic-card" id="tac-normal" onclick="setTactic('normal')"><div class="tactic-title">⚪ NORMAL</div><div class="tactic-desc">Dengeli. Bonus veya ceza yok.</div></div><div class="tactic-card" id="tac-attack" onclick="setTactic('attack')"><div class="tactic-title">🔴 TAARRUZ (Hücum)</div><div class="tactic-desc">Saldırı Gücü: <strong>+%50</strong><br>Savunma Zafiyeti: <strong>Alınan hasar artar.</strong></div></div><div class="tactic-card" id="tac-defense" onclick="setTactic('defense')"><div class="tactic-title">🔵 TAHKİMAT (Savunma)</div><div class="tactic-desc">Savunma Gücü: <strong>+%50</strong><br>Saldırı Cezası: <strong>-%30 Hasar.</strong></div></div><div class="tactic-card" id="tac-speed" onclick="setTactic('speed')"><div class="tactic-title">🟢 LOJİSTİK (Ekonomi)</div><div class="tactic-desc">Asker Maliyeti: <strong>4g</strong> (Ucuz)<br>Savaş Gücü: <strong>-%20 Hasar.</strong></div></div><br><button class="action-btn btn-green" onclick="closeModal('tactic-modal')">ONAYLA</button></div></div>
-    <div id="help-modal" class="modal"><div class="modal-content"><h3 style="color:#3498db;">YENİ KURALLAR</h3><div style="text-align:left;font-size:13px;"><p>🏰 <strong>ANA ÜS KORUMASI:</strong> Kalen (🏰) düşerse oyunu <strong>KAYBEDERSİN!</strong></p><p>👤 <strong>NPM Hesabı:</strong> Sol üstteki ikondan giriş yap, başarımları topla.</p><p>📊 <strong>Ekonomi:</strong> Vergi topladıkça halk yorulur, fetih yaptıkça sevinir.</p></div><button class="action-btn btn-green" onclick="closeModal('help-modal')">ANLADIM</button></div></div>
+    <div id="help-modal" class="modal"><div class="modal-content"><h3 style="color:#3498db;">YENİ KURALLAR</h3><div style="text-align:left;font-size:13px;"><p>🏰 <strong>ANA ÜS:</strong> Kalen düşerse kaybedersin.</p><p>👤 <strong>Hesap:</strong> Kayıt olursan verilerin buluta (local) kaydedilir.</p><p>📊 <strong>Ekonomi:</strong> Vergi halkı yorar, fetih sevindirir.</p></div><button class="action-btn btn-green" onclick="closeModal('help-modal')">ANLADIM</button></div></div>
     <div id="skin-modal" class="modal"><div class="modal-content"><h3>ÖZELLEŞTİRME</h3><p>Sen:</p><div><span class="color-opt" style="background:#3498db" onclick="setSkin('player', '#3498db')"></span><span class="color-opt" style="background:#1abc9c" onclick="setSkin('player', '#1abc9c')"></span><span class="color-opt" style="background:#9b59b6" onclick="setSkin('player', '#9b59b6')"></span></div><p>Düşman:</p><div><span class="color-opt" style="background:#c0392b" onclick="setSkin('enemy', '#c0392b')"></span><span class="color-opt" style="background:#e67e22" onclick="setSkin('enemy', '#e67e22')"></span></div><p>Barbar:</p><div><span class="color-opt" style="background:#d35400" onclick="setSkin('barb', '#d35400')"></span><span class="color-opt" style="background:#8e44ad" onclick="setSkin('barb', '#8e44ad')"></span></div><br><button class="action-btn btn-green" onclick="closeModal('skin-modal')">KAYDET</button></div></div>
     <div id="shop-modal" class="modal"><div class="modal-content"><h3 style="color:#e67e22;">MAĞAZA</h3><div class="list-item" onclick="buyItem('income')"><div>📈 <strong>Yatırım</strong><br><small>Gelir +3</small></div><div style="color:var(--gold)">50g</div></div><div class="list-item" onclick="buyItem('merc')"><div>⚔️ <strong>Paralı Asker</strong><br><small>+15 Asker</small></div><div style="color:var(--gold)">40g</div></div><div class="list-item" onclick="buyItem('fort')"><div>🏰 <strong>Kale</strong><br><small>Merkez +25 Asker</small></div><div style="color:var(--gold)">60g</div></div><div class="list-item" onclick="buyItem('spy')"><div>👁️ <strong>Casus</strong><br><small>Pusuları Gör</small></div><div style="color:var(--gold)">75g</div></div><div class="list-item" onclick="buyItem('nuke')"><div>💣 <strong>Hava Saldırısı</strong><br><small>Düşmanı Vur</small></div><div style="color:var(--gold)">120g</div></div><br><button class="action-btn btn-blue" onclick="closeModal('shop-modal')">ÇIKIŞ</button></div></div>
     <div id="settings-modal" class="modal"><div class="modal-content"><h3>AYARLAR</h3><div style="background:#333; padding:10px; border-radius:5px; margin-bottom:10px;"><input type="text" id="cheat-code" style="width:70%; padding:8px; text-transform:uppercase;" placeholder="KOD"><button class="action-btn btn-purp" style="padding:8px; width:auto;" onclick="submitCode()">OK</button></div><button class="action-btn" style="background:#c0392b;" onclick="fullReset()">⚠️ SIFIRLA</button><br><br><button class="action-btn btn-green" onclick="closeModal('settings-modal')">KAPAT</button></div></div>
@@ -309,23 +284,14 @@
     const GRID_W = 8;
     const TOTAL = GRID_W * GRID_W;
     
-    let gold = 0;
-    let level = 1;
-    let incomeBonus = 0;
-    let tiles = []; 
-    let isPaused = false;
-    let dragStartIdx = null;
-    let isDragging = false;
-    let selectedIdx = null;
-    let taxReady = true;
-    let taxEfficiency = 100;
-    let currentTactic = 'normal'; 
-    let dailyMissions = [];
-    let lastMissionDate = "";
-    let baseIdx = 0;
-
-    // NPM ACCOUNT SİSTEMİ
-    let currentUser = null;
+    // Global Değişkenler
+    let gold = 0, level = 1, incomeBonus = 0, tiles = [], isPaused = false;
+    let dragStartIdx = null, isDragging = false, selectedIdx = null;
+    let taxReady = true, taxEfficiency = 100, currentTactic = 'normal';
+    let dailyMissions = [], lastMissionDate = "", baseIdx = 0;
+    
+    // Auth & Database
+    let currentUser = null; // Şu an giriş yapmış kullanıcı nesnesi
     const achievements = [
         { id: 'first_win', title: 'İlk Zafer', desc: 'Bir bölümü kazan', xp: 100, reward: 50 },
         { id: 'rich', title: 'Zengin', desc: '1000 Altına ulaş', xp: 500, reward: 200 },
@@ -337,134 +303,98 @@
     let audioCtx = new AudioContext();
 
     function playSound(type) {
-        if(isPaused) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        const now = audioCtx.currentTime;
-        if (type === 'coin') { osc.frequency.setValueAtTime(1200, now); gain.gain.setValueAtTime(0.05, now); osc.frequency.linearRampToValueAtTime(1800, now+0.1); gain.gain.linearRampToValueAtTime(0, now+0.1); osc.start(now); osc.stop(now+0.1); }
-        else if (type === 'fight') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.2); osc.start(now); osc.stop(now+0.2); }
-        else if (type === 'ambush') { osc.type = 'square'; osc.frequency.setValueAtTime(200, now); gain.gain.setValueAtTime(0.1, now); osc.frequency.linearRampToValueAtTime(50, now+0.4); gain.gain.linearRampToValueAtTime(0, now+0.4); osc.start(now); osc.stop(now+0.4); }
-        else if (type === 'good') { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); gain.gain.setValueAtTime(0.1, now); osc.frequency.exponentialRampToValueAtTime(800, now+0.3); gain.gain.linearRampToValueAtTime(0, now+0.3); osc.start(now); osc.stop(now+0.3); }
-        else if (type === 'achievement') { osc.type = 'triangle'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(600, now+0.2); osc.frequency.linearRampToValueAtTime(900, now+0.4); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.5); osc.start(now); osc.stop(now+0.5); }
+        if(isPaused) return; if(audioCtx.state==='suspended') audioCtx.resume();
+        const osc=audioCtx.createOscillator(), gain=audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); const now=audioCtx.currentTime;
+        if(type==='coin'){osc.frequency.setValueAtTime(1200,now);gain.gain.setValueAtTime(0.05,now);osc.frequency.linearRampToValueAtTime(1800,now+0.1);gain.gain.linearRampToValueAtTime(0,now+0.1);osc.start(now);osc.stop(now+0.1);}
+        else if(type==='fight'){osc.type='sawtooth';osc.frequency.setValueAtTime(100,now);gain.gain.setValueAtTime(0.1,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.2);osc.start(now);osc.stop(now+0.2);}
+        else if(type==='good'){osc.type='sine';osc.frequency.setValueAtTime(400,now);gain.gain.setValueAtTime(0.1,now);osc.frequency.exponentialRampToValueAtTime(800,now+0.3);gain.gain.linearRampToValueAtTime(0,now+0.3);osc.start(now);osc.stop(now+0.3);}
+        else if(type==='achievement'){osc.type='triangle';osc.frequency.setValueAtTime(300,now);osc.frequency.linearRampToValueAtTime(600,now+0.2);osc.frequency.linearRampToValueAtTime(900,now+0.4);gain.gain.setValueAtTime(0.1,now);gain.gain.linearRampToValueAtTime(0,now+0.5);osc.start(now);osc.stop(now+0.5);}
     }
 
-    function init(nextLevel = false) {
-        document.getElementById('map-grid').innerHTML = '';
-        tiles = [];
-        isPaused = false;
-        document.getElementById('pause-overlay').style.display = 'none';
-        
-        loadGame(); // Veriyi yükle
-        
-        checkDailyMissions();
-        taxEfficiency = 100;
-        baseIdx = 0; 
+    // --- AUTHENTICATION (KAYIT/GİRİŞ SİSTEMİ) ---
+    function getDB() { return JSON.parse(localStorage.getItem('aos_users_db')) || []; }
+    function saveDB(db) { localStorage.setItem('aos_users_db', JSON.stringify(db)); }
 
-        for (let i = 0; i < TOTAL; i++) {
-            let owner = 0;
-            let army = Math.floor(Math.random() * 3) + 1;
-            let economy = Math.floor(Math.random() * 3) + 1;
-            let hiddenBarb = 0;
-
-            if (i === 0) { owner = 1; army = 15; baseIdx = 0; } 
-            else if (i === TOTAL - 1) { owner = 2; army = 20 + (level * 8); } 
-            else { if(Math.random() < 0.15) hiddenBarb = 10 + (level * 2); }
-
-            const div = document.createElement('div');
-            div.className = 'tile neutral';
-            div.dataset.idx = i;
-            div.innerHTML = `<span>${army}</span><div class="trap-indicator"></div><div class="base-indicator">🏰</div>`;
-            div.addEventListener('mousedown', startDrag);
-            div.addEventListener('touchstart', startDrag, {passive: false});
-
-            document.getElementById('map-grid').appendChild(div);
-            tiles.push({ id: i, owner, army, economy: economy, trap: 0, hiddenBarb: hiddenBarb, el: div });
-        }
-        
-        window.addEventListener('mousemove', doDrag);
-        window.addEventListener('mouseup', endDrag);
-        window.addEventListener('touchmove', doDrag, {passive: false});
-        window.addEventListener('touchend', endDrag);
-
-        setTactic('normal'); 
-        updateUI();
-        updateProfileUI();
-        startGameLoops();
-    }
-
-    let loops = {};
-    function startGameLoops() {
-        for(let k in loops) clearInterval(loops[k]);
-        loops.ai = setInterval(() => { if(!isPaused) aiLoop(); }, Math.max(500, 2000 - (level * 100)));
-        loops.spawn = setInterval(() => { 
-            if(!isPaused && tiles[baseIdx].owner===1) { 
-                tiles[baseIdx].army+=2; animPop(baseIdx); updateUI(); 
-            } 
-        }, 4000);
-    }
-
-    // --- NPM HESAP & BAŞARIM ---
-    function openProfile() { document.getElementById('profile-modal').style.display = 'flex'; isPaused = true; updateProfileUI(); }
-    
-    function npmLogin() {
-        const username = document.getElementById('npm-username').value.trim();
-        if(!username) return alert("Kullanıcı adı giriniz!");
-        
-        // Simüle edilmiş giriş
-        currentUser = {
-            name: username,
-            score: 0,
-            unlocked: []
-        };
-        
-        // ÖZEL BONUS
-        if(username.toLowerCase() === 'admin' || username.toLowerCase() === 'npm_user') {
-            gold += 1000;
-            alert(`HOŞGELDİN ${username.toUpperCase()}! \nNPM Launcher Bonusu: +1000 Altın`);
+    function switchAuth(mode) {
+        document.getElementById('login-error').style.display='none';
+        document.getElementById('reg-error').style.display='none';
+        if(mode === 'login') {
+            document.getElementById('auth-login').style.display = 'block';
+            document.getElementById('auth-register').style.display = 'none';
         } else {
-            gold += 100; // Standart bonus
-            alert(`Giriş Başarılı! Hoşgeldin ${username}. (+100 Altın)`);
+            document.getElementById('auth-login').style.display = 'none';
+            document.getElementById('auth-register').style.display = 'block';
         }
-        
-        saveGame();
-        updateProfileUI();
-        document.getElementById('status-dot').style.display = 'block';
     }
 
-    function npmLogout() {
+    function authRegister() {
+        const u = document.getElementById('reg-user').value.trim();
+        const p = document.getElementById('reg-pass').value.trim();
+        const err = document.getElementById('reg-error');
+        
+        if(u.length < 3 || p.length < 3) { err.innerText = "En az 3 karakter gerekli!"; err.style.display='block'; return; }
+        
+        let db = getDB();
+        if(db.find(x => x.username === u)) { err.innerText = "Bu kullanıcı adı dolu!"; err.style.display='block'; return; }
+
+        // Yeni Kullanıcı Oluştur
+        const newUser = { username: u, password: p, score: 0, unlocked: [], gameData: null };
+        db.push(newUser);
+        saveDB(db);
+
+        // Otomatik Giriş ve Bonus
+        currentUser = newUser;
+        gold = 500; // KAYIT BONUSU
+        alert("Kayıt Başarılı! +500 Altın Hoşgeldin Bonusu Eklendi.");
+        
+        init(false); // Oyunu başlat/sıfırla
+        updateProfileUI();
+    }
+
+    function authLogin() {
+        const u = document.getElementById('login-user').value.trim();
+        const p = document.getElementById('login-pass').value.trim();
+        const err = document.getElementById('login-error');
+
+        let db = getDB();
+        const user = db.find(x => x.username === u && x.password === p);
+
+        if(!user) { err.innerText = "Kullanıcı adı veya şifre hatalı!"; err.style.display='block'; return; }
+
+        currentUser = user;
+        alert(`Giriş Yapıldı: ${u}`);
+        
+        // Kullanıcının kayıtlı oyununu yükle
+        if(user.gameData) loadGameData(user.gameData);
+        else init(false); // Kayıt yoksa sıfırdan başla
+
+        updateProfileUI();
+    }
+
+    function authLogout() {
         if(confirm("Çıkış yapmak üzeresin?")) {
+            saveGame(); // Çıkmadan kaydet
             currentUser = null;
             document.getElementById('status-dot').style.display = 'none';
-            fullReset(); // Çıkış yapınca oyunu sıfırla (güvenlik)
+            init(false); // Misafir moduna dön (Sıfırla)
+            switchAuth('login');
+            updateProfileUI();
         }
     }
 
-    function checkAchievement(id) {
-        if(!currentUser) return;
-        const ach = achievements.find(a => a.id === id);
-        if(ach && !currentUser.unlocked.includes(id)) {
-            currentUser.unlocked.push(id);
-            currentUser.score += ach.xp;
-            gold += ach.reward;
-            
-            // Bildirim Göster
-            const notify = document.getElementById('achieve-notify');
-            document.getElementById('achieve-text').innerText = `${ach.title} (+${ach.reward}g)`;
-            notify.style.display = 'block';
-            playSound('achievement');
-            
-            setTimeout(() => notify.style.display = 'none', 3000);
-            saveGame();
-        }
+    function openProfile() { 
+        document.getElementById('profile-modal').style.display = 'flex'; 
+        isPaused = true; 
+        updateProfileUI(); 
     }
 
     function updateProfileUI() {
         if(currentUser) {
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('profile-section').style.display = 'block';
-            document.getElementById('user-display').innerText = currentUser.name;
+            document.getElementById('auth-login').style.display = 'none';
+            document.getElementById('auth-register').style.display = 'none';
+            document.getElementById('auth-profile').style.display = 'block';
+            document.getElementById('status-dot').style.display = 'block';
+            document.getElementById('user-display').innerText = currentUser.username;
             document.getElementById('user-score').innerText = currentUser.score + " XP";
             
             let html = '';
@@ -477,287 +407,123 @@
             });
             document.getElementById('achieve-list').innerHTML = html;
         } else {
-            document.getElementById('login-section').style.display = 'block';
-            document.getElementById('profile-section').style.display = 'none';
-        }
-    }
-
-    // --- OYUN İÇİ FONKSİYONLAR ---
-    function moveBase() {
-        if(isPaused) return;
-        if(selectedIdx === null || tiles[selectedIdx].owner !== 1) return alert("Kendi bölgende bir kare seç!");
-        if(selectedIdx === baseIdx) return alert("Zaten Ana Üs burası!");
-        if(gold < 50) return alert("Yetersiz Altın (50g)");
-        gold -= 50; baseIdx = selectedIdx; playSound('good'); showFloatText("ÜS TAŞINDI!", tiles[baseIdx].el, 'green'); updateUI();
-    }
-
-    function setTactic(type) {
-        currentTactic = type;
-        document.querySelectorAll('.tactic-card').forEach(el => el.classList.remove('active'));
-        document.getElementById('tac-'+type).classList.add('active');
-        const badge = document.getElementById('ui-tactic-badge');
-        badge.innerText = type === 'normal' ? 'NORMAL' : (type === 'attack' ? 'TAARRUZ' : (type === 'defense' ? 'TAHKİMAT' : 'LOJİSTİK'));
-        if(type === 'attack') badge.style.color = '#e74c3c';
-        else if(type === 'defense') badge.style.color = '#3498db';
-        else if(type === 'speed') badge.style.color = '#2ecc71';
-        else badge.style.color = '#fff';
-        let cost = 5; if(currentTactic === 'speed') cost = 4;
-        document.getElementById('ui-recruit-cost').innerText = cost;
-        missionUpdate('tactic', 1);
-        updateUI();
-    }
-
-    function attemptMove(from, to) {
-        if(isPaused) return;
-        const r1 = Math.floor(from/GRID_W), c1 = from%GRID_W;
-        const r2 = Math.floor(to/GRID_W), c2 = to%GRID_W;
-        if(Math.abs(r1-r2) + Math.abs(c1-c2) !== 1) return;
-
-        const src = tiles[from];
-        const dest = tiles[to];
-        if(src.army <= 1) return;
-
-        let force = Math.floor(src.army / 2);
-        src.army -= force;
-
-        let attackPower = force;
-        if(currentTactic === 'attack') attackPower = Math.floor(force * 1.5); 
-        if(currentTactic === 'defense') attackPower = Math.floor(force * 0.7); 
-        if(currentTactic === 'speed') attackPower = Math.floor(force * 0.8); 
-
-        if(dest.owner === 1) {
-            dest.army += force; 
-        } else {
-            if(dest.owner === 0 && dest.hiddenBarb > 0) {
-                playSound('ambush');
-                dest.army += dest.hiddenBarb; dest.hiddenBarb = 0; dest.owner = 3; dest.el.classList.add('barbarian');
-                showFloatText("⚠️ PUSU!", dest.el, 'bad');
-                if(attackPower > dest.army) {
-                    dest.army = attackPower - dest.army; dest.owner = 1; dest.el.classList.remove('barbarian');
-                    missionUpdate('kill', 5); handleVictory(dest.army);
-                } else { dest.army -= attackPower; handleDefeat(); }
-            } else {
-                let enemyDefense = dest.army;
-                if(attackPower > enemyDefense) {
-                    missionUpdate('kill', enemyDefense);
-                    dest.army = attackPower - enemyDefense; dest.owner = 1; dest.trap = 0; dest.hiddenBarb = 0;
-                    playSound('fight'); missionUpdate('conquer', 1); handleVictory(enemyDefense); checkWin();
-                } else {
-                    missionUpdate('kill', attackPower); dest.army -= attackPower; playSound('fight'); handleDefeat();
-                }
-            }
-        }
-        updateUI();
-    }
-
-    function handleVictory(enemySize) {
-        let boost = 5 + Math.floor(enemySize / 2); if(boost > 40) boost = 40;
-        taxEfficiency += boost; if(taxEfficiency > 100) taxEfficiency = 100;
-        let color = boost > 15 ? 'green' : 'white';
-        showFloatText(`Destek +%${boost}`, document.body, color); playSound('good');
-    }
-
-    function handleDefeat() {
-        taxEfficiency -= 10; if(taxEfficiency < 10) taxEfficiency = 10;
-        showFloatText("Destek Düştü!", document.body, 'bad');
-    }
-
-    function collectTax() {
-        if(!taxReady || isPaused) return;
-        const playerTiles = tiles.filter(t => t.owner === 1);
-        let baseIncome = playerTiles.reduce((sum, t) => sum + t.economy, 0) + incomeBonus + 5;
-        let finalIncome = Math.floor(baseIncome * (taxEfficiency / 100));
-        
-        gold += finalIncome; missionUpdate('tax', finalIncome); playSound('coin'); showFloatText(`+${finalIncome}g`, document.getElementById('btn-tax'));
-        
-        // Başarım Kontrolü: Zengin
-        if(gold >= 1000) checkAchievement('rich');
-
-        let decay = 10; if(finalIncome > 50) decay = 15; if(finalIncome > 100) decay = 20;
-        taxEfficiency -= decay; if(taxEfficiency < 10) taxEfficiency = 10;
-        
-        taxReady = false; document.getElementById('btn-tax').disabled = true;
-        let w=0; let int = setInterval(()=>{ if(!isPaused) { w+=5; document.getElementById('tax-cd').style.width=w/20+"%"; if(w>=2000){clearInterval(int); taxReady=true; document.getElementById('btn-tax').disabled=false;} } }, 10);
-        updateUI();
-    }
-
-    function checkDailyMissions() {
-        const today = new Date().toDateString();
-        if(lastMissionDate !== today) { generateDailyMissions(); lastMissionDate = today; saveGame(); document.getElementById('quest-alert').style.display = 'block'; }
-    }
-    function generateDailyMissions() {
-        dailyMissions = [];
-        const pool = [ { id: 'kill', txt: "Düşman Askeri Yok Et", base: 10, rew: 20 }, { id: 'conquer', txt: "Bölge Fethet", base: 3, rew: 30 }, { id: 'spend', txt: "Altın Harca", base: 50, rew: 25 }, { id: 'recruit', txt: "Asker Topla", base: 20, rew: 15 }, { id: 'tax', txt: "Vergi Topla (Miktar)", base: 100, rew: 40 }, { id: 'trap', txt: "Pusu Kur", base: 2, rew: 35 }, { id: 'tactic', txt: "Taktik Değiştir", base: 3, rew: 10 } ];
-        for(let i=0; i<6; i++) {
-            const m = pool[Math.floor(Math.random() * pool.length)];
-            let target = Math.floor(m.base * (1 + (level * 0.2)));
-            dailyMissions.push({ id: m.id, desc: m.txt, target: target, current: 0, reward: m.rew, done: false });
-        }
-    }
-    function missionUpdate(type, amt) {
-        let updated = false;
-        dailyMissions.forEach(m => {
-            if(!m.done && m.id === type) { m.current += amt; if(m.current >= m.target) { m.current = m.target; m.done = true; gold += m.reward; showFloatText(`GÖREV: +${m.reward}g`, document.body, 'green'); playSound('good'); updated = true; } }
-        });
-        if(updated) saveGame();
-    }
-    function openMissions() {
-        document.getElementById('quest-alert').style.display = 'none';
-        let html = '';
-        dailyMissions.forEach(m => {
-            let pct = (m.current / m.target) * 100;
-            let color = m.done ? '#2ecc71' : '#f1c40f';
-            html += `<div class="list-item"><div style="width:100%"><div style="display:flex; justify-content:space-between; font-size:12px;"><span>${m.desc}</span><span style="color:${color}">${m.done ? 'TAMAMLANDI' : '+' + m.reward + 'g'}</span></div><div class="prog-bar"><div class="prog-fill" style="width:${pct}%; background:${color}"></div></div><div style="font-size:10px; text-align:right; color:#aaa;">${m.current}/${m.target}</div></div></div>`;
-        });
-        document.getElementById('mission-list').innerHTML = html; openModal('missions-modal');
-    }
-
-    function aiLoop() {
-        if(isPaused) return;
-        const units = tiles.filter(t => t.owner === 2);
-        units.forEach(t => {
-            if(Math.random() > 0.3 && t.army > 2) {
-                const adj = [t.id-1, t.id+1, t.id-GRID_W, t.id+GRID_W].filter(n => n>=0 && n<TOTAL);
-                const targetId = adj.find(n => tiles[n] && (Math.abs((t.id%GRID_W)-(n%GRID_W))+Math.abs(Math.floor(t.id/GRID_W)-Math.floor(n/GRID_W))===1));
-                if(targetId !== undefined) {
-                    const target = tiles[targetId];
-                    if(target.owner !== 2) {
-                        const force = Math.floor(t.army/2); t.army -= force;
-                        let win = false;
-                        if(target.owner === 0 && target.trap > 0) {
-                            if(target.trap > force) { target.owner = 1; target.army = target.trap - force; target.trap = 0; showFloatText("Pusu Tuttu!", target.el); } 
-                            else { target.owner = 2; target.army = force - target.trap; target.trap = 0; win=true; }
-                        } else {
-                            let effectiveForce = force;
-                            if(target.owner === 1 && currentTactic === 'defense') effectiveForce = Math.floor(force * 0.7);
-                            if(effectiveForce > target.army) { target.army = effectiveForce - target.army; target.owner = 2; win=true; } else { target.army -= effectiveForce; }
-                        }
-                        if(win) {
-                            checkWin(); 
-                            if(target.id === baseIdx) {
-                                setTimeout(() => { alert("KRALLIK DÜŞTÜ! Ana Üs kaybedildi."); init(false); }, 100);
-                            }
-                        }
-                    }
-                }
-            } else { t.army += 1 + Math.floor(level/5); }
-        });
-        updateUI();
-    }
-
-    function recruitAction() {
-        if(isPaused) return;
-        let targetIdx = baseIdx;
-        if(tiles[targetIdx].owner !== 1) return alert("Ana Üssünü Kaybettin!"); 
-        let cost = 5; if(currentTactic === 'speed') cost = 4;
-        if(gold < cost) return;
-        gold -= cost; missionUpdate('spend', cost); missionUpdate('recruit', 5);
-        tiles[targetIdx].army += 5; animPop(targetIdx); updateUI();
-    }
-    
-    function setTrap() {
-        if(isPaused) return;
-        if(selectedIdx === null || tiles[selectedIdx].owner !== 0) return alert("Tarafsız bölge seç!");
-        if(gold < 15) return;
-        gold-=15; missionUpdate('spend', 15); missionUpdate('trap', 1);
-        
-        // Başarım Kontrolü: Pusu
-        let trapCount = tiles.filter(t => t.trap > 0).length + 1;
-        if(trapCount >= 5) checkAchievement('ambush_king');
-
-        tiles[selectedIdx].trap += 5; showFloatText("🪤 Gizlendi", tiles[selectedIdx].el); updateUI();
-    }
-
-    function buyItem(type) {
-        if(type==='income' && gold>=50) { gold-=50; incomeBonus+=3; missionUpdate('spend', 50); }
-        else if(type==='merc' && gold>=40) { if(selectedIdx!==null && tiles[selectedIdx].owner===1){gold-=40; tiles[selectedIdx].army+=15; missionUpdate('spend', 40);} }
-        else if(type==='nuke' && gold>=120) { gold-=120; tiles.forEach(t=>{if(t.owner===2)t.army=1}); playSound('fight'); missionUpdate('spend', 120); }
-        else if(type==='fort' && gold>=60) { if(tiles[baseIdx].owner===1) { gold-=60; tiles[baseIdx].army+=25; missionUpdate('spend', 60); } }
-        else if(type==='spy' && gold>=75) { gold-=75; tiles.forEach(t => { if(t.hiddenBarb > 0) { t.el.classList.add('revealed'); setTimeout(()=>t.el.classList.remove('revealed'), 3000); } }); showFloatText("👁️ Pusular Göründü", document.body); missionUpdate('spend', 75); }
-        closeModal('shop-modal'); updateUI();
-    }
-
-    function updateUI() {
-        document.getElementById('ui-gold').innerText = gold;
-        const playerTiles = tiles.filter(t => t.owner === 1);
-        let baseIncome = playerTiles.reduce((sum, t) => sum + t.economy, 0) + incomeBonus + 5;
-        let predictedIncome = Math.floor(baseIncome * (taxEfficiency / 100));
-        
-        document.getElementById('ui-income').innerText = predictedIncome;
-        document.getElementById('ui-efficiency').innerText = taxEfficiency;
-        
-        let effEl = document.getElementById('ui-efficiency');
-        if(taxEfficiency > 70) effEl.style.color = "#2ecc71"; else if(taxEfficiency > 30) effEl.style.color = "#f1c40f"; else effEl.style.color = "#e74c3c";
-
-        tiles.forEach(t => {
-            const el = t.el; el.className = 'tile';
-            if(t.owner===1) el.classList.add('player'); else if(t.owner===2) el.classList.add('enemy'); else if(t.owner===3) el.classList.add('barbarian'); else el.classList.add('neutral');
-            const trap = el.querySelector('.trap-indicator'); trap.style.display = (t.trap > 0 && t.owner===0) ? 'block' : 'none';
-            const baseInd = el.querySelector('.base-indicator'); baseInd.style.display = (t.id === baseIdx && t.owner === 1) ? 'block' : 'none';
-            if(selectedIdx===t.id) el.style.border="2px solid white"; else el.style.border="";
-            el.querySelector('span').innerText = t.army;
-        });
-        saveGame();
-    }
-    
-    function loadGame() {
-        if(!currentUser) {
-            const d = JSON.parse(localStorage.getItem('aos_npm_guest')) || {};
-            level = d.level || 1; gold = d.gold || 0; incomeBonus = d.income || 0;
-            if(d.date) lastMissionDate = d.date;
-            if(d.missions) dailyMissions = d.missions;
-            if(d.colors) {
-                document.documentElement.style.setProperty('--player', d.colors.player);
-                document.documentElement.style.setProperty('--enemy', d.colors.enemy);
-                if(d.colors.barb) document.documentElement.style.setProperty('--barb', d.colors.barb);
-            }
-        } else {
-            // NPM User verisi
-            const key = 'aos_npm_' + currentUser.name;
-            const d = JSON.parse(localStorage.getItem(key)) || {};
-            level = d.level || 1; gold = d.gold || 0; incomeBonus = d.income || 0;
-            currentUser.unlocked = d.unlocked || [];
-            currentUser.score = d.score || 0;
-            if(d.date) lastMissionDate = d.date;
-            if(d.missions) dailyMissions = d.missions;
+            document.getElementById('auth-profile').style.display = 'none';
+            switchAuth('login'); // Varsayılan login ekranı
         }
     }
 
     function saveGame() {
-        const data = {
-            level, gold, income:incomeBonus, missions: dailyMissions, date: lastMissionDate,
+        const data = { level, gold, income:incomeBonus, missions: dailyMissions, date: lastMissionDate, 
             colors: { player: getComputedStyle(document.documentElement).getPropertyValue('--player').trim(), enemy: getComputedStyle(document.documentElement).getPropertyValue('--enemy').trim(), barb: getComputedStyle(document.documentElement).getPropertyValue('--barb').trim() }
         };
-        
+
         if(currentUser) {
-            data.unlocked = currentUser.unlocked;
-            data.score = currentUser.score;
-            localStorage.setItem('aos_npm_' + currentUser.name, JSON.stringify(data));
+            // Kullanıcı veritabanına kaydet
+            let db = getDB();
+            let userIdx = db.findIndex(u => u.username === currentUser.username);
+            if(userIdx !== -1) {
+                db[userIdx].gameData = data;
+                db[userIdx].score = currentUser.score;
+                db[userIdx].unlocked = currentUser.unlocked;
+                saveDB(db);
+            }
         } else {
-            localStorage.setItem('aos_npm_guest', JSON.stringify(data));
+            // Misafir kaydı
+            localStorage.setItem('aos_guest_save', JSON.stringify(data));
         }
     }
 
-    function checkWin() { 
-        if(tiles.filter(t=>t.owner===1).length===0) { alert("YENİLDİN"); init(false); } 
-        else if(tiles.filter(t=>t.owner===2).length===0) { 
-            checkAchievement('first_win');
-            if(level >= 5) checkAchievement('survivor');
-            alert("ZAFER!"); level++; init(true); 
-        } 
+    function loadGameData(d) {
+        level = d.level || 1; gold = d.gold || 0; incomeBonus = d.income || 0;
+        if(d.date) lastMissionDate = d.date;
+        if(d.missions) dailyMissions = d.missions;
+        if(d.colors) {
+            document.documentElement.style.setProperty('--player', d.colors.player);
+            document.documentElement.style.setProperty('--enemy', d.colors.enemy);
+            if(d.colors.barb) document.documentElement.style.setProperty('--barb', d.colors.barb);
+        }
+        // Haritayı yeniden çiz
+        init(true); 
     }
 
-    function setSkin(who, color) { document.documentElement.style.setProperty('--' + who, color); saveGame(); }
+    // --- OYUN CORE ---
+    function init(resetMap = false) {
+        // Eğer resetMap true ise sadece haritayı çiz, verileri elleme. 
+        // False ise (sayfa yenileme) verileri yüklemeye çalış.
+        
+        document.getElementById('map-grid').innerHTML = '';
+        tiles = []; isPaused = false; document.getElementById('pause-overlay').style.display = 'none';
+        
+        if(!resetMap && !currentUser) {
+            // Misafir verisi varsa yükle
+            const d = JSON.parse(localStorage.getItem('aos_guest_save'));
+            if(d) { loadGameData(d); return; } // loadGameData init(true) çağırır
+        }
+
+        checkDailyMissions();
+        taxEfficiency = 100;
+        baseIdx = 0; 
+
+        for (let i = 0; i < TOTAL; i++) {
+            let owner = 0, army = Math.floor(Math.random() * 3) + 1, economy = Math.floor(Math.random() * 3) + 1, hiddenBarb = 0;
+            if (i === 0) { owner = 1; army = 15; baseIdx = 0; } 
+            else if (i === TOTAL - 1) { owner = 2; army = 20 + (level * 8); } 
+            else { if(Math.random() < 0.15) hiddenBarb = 10 + (level * 2); }
+
+            const div = document.createElement('div'); div.className = 'tile neutral'; div.dataset.idx = i;
+            div.innerHTML = `<span>${army}</span><div class="trap-indicator"></div><div class="base-indicator">🏰</div>`;
+            div.addEventListener('mousedown', startDrag); div.addEventListener('touchstart', startDrag, {passive: false});
+            document.getElementById('map-grid').appendChild(div);
+            tiles.push({ id: i, owner, army, economy: economy, trap: 0, hiddenBarb: hiddenBarb, el: div });
+        }
+        
+        window.addEventListener('mousemove', doDrag); window.addEventListener('mouseup', endDrag); window.addEventListener('touchmove', doDrag, {passive: false}); window.addEventListener('touchend', endDrag);
+        setTactic('normal'); updateUI(); startGameLoops();
+    }
+
+    // --- DİĞER FONKSİYONLAR (Öncekilerle Aynı) ---
+    function checkAchievement(id) {
+        if(!currentUser) return;
+        const ach = achievements.find(a => a.id === id);
+        if(ach && !currentUser.unlocked.includes(id)) {
+            currentUser.unlocked.push(id); currentUser.score += ach.xp; gold += ach.reward;
+            const n = document.getElementById('achieve-notify'); document.getElementById('achieve-text').innerText = `${ach.title} (+${ach.reward}g)`; n.style.display = 'block'; playSound('achievement'); setTimeout(() => n.style.display = 'none', 3000);
+            saveGame();
+        }
+    }
+
+    function checkDailyMissions() { const today = new Date().toDateString(); if(lastMissionDate !== today) { generateDailyMissions(); lastMissionDate = today; saveGame(); document.getElementById('quest-alert').style.display = 'block'; } }
+    function generateDailyMissions() { dailyMissions = []; const pool = [ { id: 'kill', txt: "Düşman Askeri Yok Et", base: 10, rew: 20 }, { id: 'conquer', txt: "Bölge Fethet", base: 3, rew: 30 }, { id: 'spend', txt: "Altın Harca", base: 50, rew: 25 }, { id: 'recruit', txt: "Asker Topla", base: 20, rew: 15 }, { id: 'tax', txt: "Vergi Topla", base: 100, rew: 40 } ]; for(let i=0; i<5; i++) { const m = pool[Math.floor(Math.random() * pool.length)]; dailyMissions.push({ id: m.id, desc: m.txt, target: Math.floor(m.base * (1 + level*0.2)), current: 0, reward: m.rew, done: false }); } }
+    function missionUpdate(type, amt) { let upd=false; dailyMissions.forEach(m => { if(!m.done && m.id === type) { m.current += amt; if(m.current >= m.target) { m.current = m.target; m.done = true; gold += m.reward; showFloatText("GÖREV TAMAM", document.body, 'green'); playSound('good'); upd=true; } } }); if(upd) saveGame(); }
+    
+    function recruitAction() { if(isPaused) return; let t = baseIdx; if(tiles[t].owner !== 1) return alert("Ana Üssünü Kaybettin!"); let cost = currentTactic==='speed'?4:5; if(gold < cost) return; gold -= cost; missionUpdate('spend', cost); missionUpdate('recruit', 5); tiles[t].army += 5; animPop(t); updateUI(); }
+    function setTrap() { if(isPaused) return; if(selectedIdx===null||tiles[selectedIdx].owner!==0) return alert("Tarafsız bölge seç!"); if(gold<15)return; gold-=15; tiles[selectedIdx].trap+=5; showFloatText("🪤 Gizlendi", tiles[selectedIdx].el); missionUpdate('trap', 1); updateUI(); }
+    function moveBase() { if(isPaused) return; if(selectedIdx===null||tiles[selectedIdx].owner!==1) return alert("Kendi bölgende bir kare seç!"); if(selectedIdx===baseIdx) return alert("Zaten Ana Üs!"); if(gold<50)return alert("50g Gerekli"); gold-=50; baseIdx=selectedIdx; playSound('good'); showFloatText("ÜS TAŞINDI", tiles[baseIdx].el, 'green'); updateUI(); }
+    
+    function aiLoop() { if(isPaused) return; const units = tiles.filter(t => t.owner === 2); units.forEach(t => { if(Math.random()>0.3 && t.army>2) { const adj = [t.id-1, t.id+1, t.id-GRID_W, t.id+GRID_W].filter(n=>n>=0 && n<TOTAL); const tid = adj.find(n=>tiles[n] && (Math.abs((t.id%GRID_W)-(n%GRID_W))+Math.abs(Math.floor(t.id/GRID_W)-Math.floor(n/GRID_W))===1)); if(tid!==undefined){ const tar=tiles[tid]; if(tar.owner!==2){ const f=Math.floor(t.army/2); t.army-=f; let win=false; if(tar.owner===0 && tar.trap>0){ if(tar.trap>f){tar.owner=1; tar.army=tar.trap-f; tar.trap=0; showFloatText("Pusu!", tar.el);} else {tar.owner=2; tar.army=f-tar.trap; tar.trap=0; win=true;} } else { let eff=f; if(tar.owner===1 && currentTactic==='defense') eff=Math.floor(f*0.7); if(eff>tar.army){tar.army=eff-tar.army; tar.owner=2; win=true;} else {tar.army-=eff;} } if(win){ if(tar.id===baseIdx){ setTimeout(()=>{alert("KAYBETTİN!"); init(false);},100); } } } } } else { t.army+=1+Math.floor(level/5); } }); updateUI(); }
+    
+    function collectTax() { if(!taxReady || isPaused) return; const inc = tiles.filter(t=>t.owner===1).reduce((s,t)=>s+t.economy,0)+incomeBonus+5; const fi = Math.floor(inc*(taxEfficiency/100)); gold+=fi; missionUpdate('tax', fi); playSound('coin'); showFloatText(`+${fi}g`, document.getElementById('btn-tax')); if(gold>=1000) checkAchievement('rich'); taxEfficiency = Math.max(10, taxEfficiency-10); taxReady=false; document.getElementById('btn-tax').disabled=true; let w=0; let int=setInterval(()=>{if(!isPaused){w+=5; document.getElementById('tax-cd').style.width=w/20+"%"; if(w>=2000){clearInterval(int);taxReady=true;document.getElementById('btn-tax').disabled=false;}}},10); updateUI(); }
+    function setTactic(t) { currentTactic=t; document.querySelectorAll('.tactic-card').forEach(e=>e.classList.remove('active')); document.getElementById('tac-'+t).classList.add('active'); const b=document.getElementById('ui-tactic-badge'); b.innerText=t.toUpperCase(); document.getElementById('ui-recruit-cost').innerText=t==='speed'?4:5; updateUI(); }
+    
+    function attemptMove(from, to) { if(isPaused) return; const r1=Math.floor(from/GRID_W),c1=from%GRID_W,r2=Math.floor(to/GRID_W),c2=to%GRID_W; if(Math.abs(r1-r2)+Math.abs(c1-c2)!==1) return; const s=tiles[from],d=tiles[to]; if(s.army<=1)return; let f=Math.floor(s.army/2); s.army-=f; let atk=f; if(currentTactic==='attack') atk=Math.floor(f*1.5); if(currentTactic==='defense') atk=Math.floor(f*0.7); if(currentTactic==='speed') atk=Math.floor(f*0.8); if(d.owner===1){d.army+=f;} else { if(d.owner===0 && d.hiddenBarb>0){ playSound('ambush'); d.army+=d.hiddenBarb; d.hiddenBarb=0; d.owner=3; d.el.classList.add('barbarian'); showFloatText("PUSU!",d.el,'bad'); if(atk>d.army){d.army=atk-d.army; d.owner=1; d.el.classList.remove('barbarian'); missionUpdate('kill',5); missionUpdate('conquer',1); taxEfficiency=Math.min(100, taxEfficiency+10);} else {d.army-=atk;} } else { if(atk>d.army){ missionUpdate('kill',d.army); d.army=atk-d.army; d.owner=1; d.trap=0; d.hiddenBarb=0; playSound('fight'); missionUpdate('conquer',1); taxEfficiency=Math.min(100, taxEfficiency+10); if(tiles.filter(t=>t.owner===2).length===0){ checkAchievement('first_win'); if(level>=5) checkAchievement('survivor'); alert("ZAFER!"); level++; init(true); } } else { missionUpdate('kill',atk); d.army-=atk; playSound('fight'); taxEfficiency=Math.max(10, taxEfficiency-10); } } } updateUI(); }
+
+    function updateUI() { document.getElementById('ui-gold').innerText=gold; const pTiles=tiles.filter(t=>t.owner===1); let baseInc=pTiles.reduce((s,t)=>s+t.economy,0)+incomeBonus+5; document.getElementById('ui-income').innerText=Math.floor(baseInc*(taxEfficiency/100)); document.getElementById('ui-efficiency').innerText=taxEfficiency; tiles.forEach(t=>{const el=t.el; el.className='tile'; if(t.owner===1) el.classList.add('player'); else if(t.owner===2) el.classList.add('enemy'); else if(t.owner===3) el.classList.add('barbarian'); else el.classList.add('neutral'); el.querySelector('.trap-indicator').style.display=(t.trap>0&&t.owner===0)?'block':'none'; el.querySelector('.base-indicator').style.display=(t.id===baseIdx&&t.owner===1)?'block':'none'; if(selectedIdx===t.id) el.style.border="2px solid white"; else el.style.border=""; el.querySelector('span').innerText=t.army;}); saveGame(); }
+    
+    // UI Helpers
     function togglePause(){ isPaused=!isPaused; document.getElementById('pause-overlay').style.display=isPaused?'flex':'none'; }
     function openModal(id){ document.getElementById(id).style.display='flex'; isPaused=true; }
     function closeModal(id){ document.getElementById(id).style.display='none'; isPaused=false; }
     function openSettings(){ openModal('settings-modal'); }
     function fullReset(){ localStorage.clear(); location.reload(); }
-    function submitCode(){ const val = document.getElementById('cheat-code').value.trim().toUpperCase(); if(val==='PARA'){ gold+=500; updateUI(); closeModal('settings-modal'); } else if(val==='LEVEL'){ level++; init(true); closeModal('settings-modal'); } else {alert("Kod Hatalı");} }
-    function showFloatText(txt,t,c){ if(!t)return; const r=t.getBoundingClientRect?t.getBoundingClientRect():{top:100,left:100}; const e=document.createElement('div'); e.className='float-text '+(c||''); e.innerText=txt; e.style.left=r.left+'px'; e.style.top=r.top+'px'; document.body.appendChild(e); setTimeout(()=>e.remove(),1000); }
-    function animPop(i){ tiles[i].el.classList.remove('anim-pop'); void tiles[i].el.offsetWidth; tiles[i].el.classList.add('anim-pop'); }
-
-    function startDrag(e){if(isPaused)return; if(e.target.closest('.tile')){e.preventDefault();const i=parseInt(e.target.closest('.tile').dataset.idx); if(tiles[i].owner===1) { baseIdx = i; playSound('coin'); } if(tiles[i].owner===1||tiles[i].owner===0){ selectedIdx=i; updateUI(); } if(tiles[i].owner===1){ isDragging=true; dragStartIdx=i; } } }
+    function submitCode(){ const v=document.getElementById('cheat-code').value.toUpperCase(); if(v==='PARA'){gold+=500;updateUI();closeModal('settings-modal');} else if(v==='LEVEL'){level++;init(true);closeModal('settings-modal');} }
+    function buyItem(t){ if(t==='income'&&gold>=50){gold-=50;incomeBonus+=3;} else if(t==='merc'&&gold>=40){if(selectedIdx!==null&&tiles[selectedIdx].owner===1){gold-=40;tiles[selectedIdx].army+=15;}} else if(t==='nuke'&&gold>=120){gold-=120;tiles.forEach(x=>{if(x.owner===2)x.army=1});} else if(t==='fort'&&gold>=60){if(tiles[baseIdx].owner===1){gold-=60;tiles[baseIdx].army+=25;}} else if(t==='spy'&&gold>=75){gold-=75;tiles.forEach(x=>{if(x.hiddenBarb>0)x.el.classList.add('revealed')});} missionUpdate('spend',50); closeModal('shop-modal'); updateUI(); }
+    function setSkin(w,c){document.documentElement.style.setProperty('--'+w,c);saveGame();}
+    function openMissions() { document.getElementById('quest-alert').style.display='none'; let h=''; dailyMissions.forEach(m=>{h+=`<div class="list-item"><div>${m.desc}<br><small>${m.current}/${m.target}</small></div><div style="color:${m.done?'#2ecc71':'var(--gold)'}">${m.done?'OK':'+'+m.reward}</div></div>`;}); document.getElementById('mission-list').innerHTML=h; openModal('missions-modal'); }
+    function showFloatText(t,e,c){const r=e.getBoundingClientRect();const d=document.createElement('div');d.className='float-text '+(c||'');d.innerText=t;d.style.left=r.left+'px';d.style.top=r.top+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1000);}
+    function animPop(i){tiles[i].el.classList.remove('anim-pop');void tiles[i].el.offsetWidth;tiles[i].el.classList.add('anim-pop');}
+    
+    // Drag
+    function startDrag(e){if(isPaused)return;if(e.target.closest('.tile')){e.preventDefault();const i=parseInt(e.target.closest('.tile').dataset.idx);if(tiles[i].owner===1){baseIdx=i;playSound('coin');}if(tiles[i].owner===1||tiles[i].owner===0){selectedIdx=i;updateUI();}if(tiles[i].owner===1){isDragging=true;dragStartIdx=i;}}}
     function doDrag(e){if(!isDragging||isPaused)return;e.preventDefault();const t=e.touches?e.touches[0]:e;const b=tiles[dragStartIdx].el.getBoundingClientRect();drawArrow(b.left+b.width/2,b.top+b.height/2,t.clientX,t.clientY);}
     function endDrag(e){if(!isDragging)return;isDragging=false;document.getElementById('drag-line').style.display='none';document.getElementById('drag-head').style.display='none';const t=e.changedTouches?e.changedTouches[0]:e;const el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.closest('.tile')){const i=parseInt(el.closest('.tile').dataset.idx);if(i!==dragStartIdx)attemptMove(dragStartIdx,i);}}
     function drawArrow(x1,y1,x2,y2){const l=document.getElementById('drag-line'),h=document.getElementById('drag-head');l.style.display='block';l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);const a=Math.atan2(y2-y1,x2-x1);h.style.display='block';h.setAttribute('points',`${x2},${y2} ${x2-20*Math.cos(a-0.5)},${y2-20*Math.sin(a-0.5)} ${x2-20*Math.cos(a+0.5)},${y2-20*Math.sin(a+0.5)}`);}
